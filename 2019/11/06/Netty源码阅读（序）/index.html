@@ -5,14 +5,17 @@
   
 
   
-  <title>categories | Carrot Blog</title>
+  <title>Netty源码阅读（序） | Carrot Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;categories&#x2F;index-1.html">
+  <meta name="description" content="参加的阿里中间件性能挑战赛用到了Netty，就决定利用这个机会，读一读Netty的源码。首先，我认为阅读源码大致有2个主要目的，1.了解Netty的内部机制，更好的使用Netty；2.学习Netty的实现，比如池化的ByteBuf、以及EventLoop的责任链模式，我认为都有很多值得借鉴，可以用在工作中的技巧和思想；3.可以看一看比较复杂的框架代码的组织结构、代码风格，并做一些思考🤔。 阅读源">
+<meta name="keywords" content="Java,Netty">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Netty源码阅读（序）">
+<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;2019&#x2F;11&#x2F;06&#x2F;Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%BA%8F%EF%BC%89&#x2F;index.html">
 <meta property="og:site_name" content="Carrot Blog">
+<meta property="og:description" content="参加的阿里中间件性能挑战赛用到了Netty，就决定利用这个机会，读一读Netty的源码。首先，我认为阅读源码大致有2个主要目的，1.了解Netty的内部机制，更好的使用Netty；2.学习Netty的实现，比如池化的ByteBuf、以及EventLoop的责任链模式，我认为都有很多值得借鉴，可以用在工作中的技巧和思想；3.可以看一看比较复杂的框架代码的组织结构、代码风格，并做一些思考🤔。 阅读源">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-11-05T08:40:36.897Z">
+<meta property="og:updated_time" content="2019-11-06T03:33:54.427Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Carrot Blog" type="application/atom+xml">
@@ -64,12 +67,16 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="page-" class="article article-type-page" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Netty源码阅读（序）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/categories/index-1.html" class="article-date">
-  <time datetime="2019-11-05T08:40:36.000Z" itemprop="datePublished">2019-11-05</time>
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%BA%8F%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T01:33:07.000Z" itemprop="datePublished">2019-11-06</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -78,7 +85,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      categories
+      Netty源码阅读（序）
     </h1>
   
 
@@ -86,17 +93,74 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>参加的阿里中间件性能挑战赛用到了Netty，就决定利用这个机会，读一读Netty的源码。首先，我认为阅读源码大致有2个主要目的，1.了解Netty的内部机制，更好的使用Netty；2.学习Netty的实现，比如池化的ByteBuf、以及EventLoop的责任链模式，我认为都有很多值得借鉴，可以用在工作中的技巧和思想；3.可以看一看比较复杂的框架代码的组织结构、代码风格，并做一些思考🤔。</p>
+<p>阅读源码之前，首先要有一个大局观，就是Netty解决了什么问题，有什么优点，主要有哪些模块组成？</p>
+<p>另外，我认为带着问题去阅读，才能够带来更多的收获。所以，我想在这次阅读源码的过程中，能够回答以下这些问题：</p>
+<ol>
+<li><p>Netty有哪些主要组成部分？</p>
+<p> Channel、ChannelPipeline、ChannelHandler、Eventloop、ChannelFuture、Bootstrap等。</p>
+</li>
+<li><p>Netty如何对Java NIO进行的封装？</p>
+<p> Netty的Channel借助门面模式，(1)封装了和网络相关的操作，提供了统一的视图（对于ServerSocketChannel和SocketChannel），其底层IO操作是由UnSafe接口实现的，而Channel的骨骼类AbstractChannel只是调用了ChannelPipeline的相应方法让事件在责任链上传递依次处理，ChannelPipeline上的HeadContext调用UnSafe的方法执行实际的IO操作；（2）封装了对Channel接口的配置参数操作（3）维护了Channel的状态（readable，writable，open，active等）（4）Channel接口还聚合了ChannelPipeline接口，而ChannelPipeline用于处理所有的IO事件。</p>
+</li>
+<li><p>Netty如何利用无锁化做到的高性能？</p>
+</li>
+<li><p>netty如何监控内存泄漏？</p>
+</li>
+<li><p>netty如何实现的buffer池？</p>
+</li>
+<li><p>netty在代码设计方面值得学习的地方？</p>
+</li>
+</ol>
+<p>最后，给出一些我初次阅读较大项目源码的一些思考：</p>
+<ol>
+<li>先了解整体框架，再去找感兴趣的部分去读；</li>
+</ol>
+<p>2.带着问题去读；</p>
+<p>3.阅读Netty源码是一个学习并发编程，网络编程极好的方式。</p>
+<p>Netty中的设计模式：</p>
+<pre><code>观察者模式：Future，Listener
+
+责任链模式：ChannelPipeline
+
+门面模式：Channel统一封装了网络操作。
+
+适配器模式：ChannelInboundHandlerAdapter
+
+装饰器模式：SimpleLeakAwareByteBuf</code></pre><p>io.netty.util.concurrent.SingleThreadEventExecutor#wakeup  什么作用？</p>
+<p>Netty中的死锁问题？</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://carrotwang.github.io/categories/index-1.html" data-id="ck2mqftl10007p9vz0i4vdgii" class="article-share-link">Share</a>
+      <a data-url="https://carrotwang.github.io/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%BA%8F%EF%BC%89/" data-id="ck2mqftl9000ep9vz8qmkf0tq" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li></ul>
+
     </footer>
   </div>
   
     
+<nav id="article-nav">
+  
+    <a href="/2019/11/06/5%E5%88%86%E9%92%9Fflink%E6%9E%81%E7%AE%80%E5%85%A5%E9%97%A8/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          5分钟flink极简入门
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/11/05/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
   
 </article>
 

@@ -5,15 +5,20 @@
   
 
   
-  <title>categories | Carrot Blog</title>
+  <title>Spring IOC源码初探（一） | Carrot Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;categories&#x2F;index-1.html">
+  <meta name="description" content="Spring提供了两个基本功能：IOC和AOP，基于此形成了Spring的生态环境，其中IOC又是整个Spring生态的基础，也就是IOC是Spring最核心的功能。 Spring IOC即反向控制，也可以叫依赖注入，把bean（组件）的初始化工作交给IOC容器，而不是在程序中完成，这就将组件的初始化和组件真正的核心功能相隔离，做到了解耦；另外，Spring IOC提倡面向接口编程，同样是为了解耦">
+<meta name="keywords" content="Java,Web,Spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring IOC源码初探（一）">
+<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;2019&#x2F;11&#x2F;06&#x2F;Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89&#x2F;index.html">
 <meta property="og:site_name" content="Carrot Blog">
+<meta property="og:description" content="Spring提供了两个基本功能：IOC和AOP，基于此形成了Spring的生态环境，其中IOC又是整个Spring生态的基础，也就是IOC是Spring最核心的功能。 Spring IOC即反向控制，也可以叫依赖注入，把bean（组件）的初始化工作交给IOC容器，而不是在程序中完成，这就将组件的初始化和组件真正的核心功能相隔离，做到了解耦；另外，Spring IOC提倡面向接口编程，同样是为了解耦">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-11-05T08:40:36.897Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;11480144-d295c72675faa1d9.png?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;1240">
+<meta property="og:updated_time" content="2019-11-06T03:37:09.415Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;11480144-d295c72675faa1d9.png?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;1240">
   
     <link rel="alternate" href="/atom.xml" title="Carrot Blog" type="application/atom+xml">
   
@@ -64,12 +69,16 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="page-" class="article article-type-page" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Spring-IOC源码初探（一）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/categories/index-1.html" class="article-date">
-  <time datetime="2019-11-05T08:40:36.000Z" itemprop="datePublished">2019-11-05</time>
+    <a href="/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T03:36:37.000Z" itemprop="datePublished">2019-11-06</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -78,7 +87,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      categories
+      Spring IOC源码初探（一）
     </h1>
   
 
@@ -86,17 +95,39 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>Spring提供了两个基本功能：IOC和AOP，基于此形成了Spring的生态环境，其中IOC又是整个Spring生态的基础，也就是IOC是Spring最核心的功能。</p>
+<p>Spring IOC即反向控制，也可以叫依赖注入，把bean（组件）的初始化工作交给IOC容器，而不是在程序中完成，这就将组件的初始化和组件真正的核心功能相隔离，做到了解耦；另外，Spring IOC提倡面向接口编程，同样是为了解耦。Spring帮助我们使软件的结构符合，开闭原则（对修改封闭，对扩展开发：不需要修改代码来增加新的功能），是解耦组件依赖关系的利器。</p>
+<p>下面我们通过对Spring IOC机制源码的学习，更好的理解Spring的IOC功能。</p>
+<p>将从组成和行为两个角度来粗略分析Spring IOC容器，本文注意基于Spring IOC容器的组成来分析。</p>
+<p>Spring容器主要指BeanFactory或者ApplicationContext，而我们常用的是后者。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/11480144-d295c72675faa1d9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Spring的容器的继承关系图"></p>
+<p>由此图，我们可以看到Spring容器继承关系的一个结构图。核心接口就是BeanFactory，它提供了容器的基本方法getBean以获得容器内的组件，HierarchicalBeanFactory，ListableBeanFactory，AutowireCapableBeanFactory三个接口分别继承自BeanFactory，并对BeanFactory的功能做了扩展。HierarchicalBeanFactory提供了父子容器的功能，ListableBeanFactory提供了容器内Bean的列表操作功能，AutowireCapableBeanFactory则提供了Bean的自动装配功能；ConfigurableBeanFactory则提供了BeanFactory的一些配置功能；这就是BeanFactory接口层次关系图，XmlBeanFactory是一个常见的BeanFactory实现它就实现了上述接口以提供完整的容器功能，同样依照此接口层次实现也可以达到解耦、职责清晰的目的。</p>
+<p>ApplicationContext同样拥有BeanFactory的上述能力，所以它继承了BeanFactory体系的大部分接口，上图中有一点是不准确的，ApplicationContext并未继承AutowireCapableBeanFactory，它的实现类是通过持有BeanFactory实例来拥有自动装配的功能（它不对外暴露自动装配功能），特别地，ApplicationContext实现了MessageSource、ResourceLoader、ApplicationEventPublisher三个接口，以拥有对国际化、加载资源、事件机制的支持。</p>
+<p>常见的BeanFactory实现有XmlBeanFactory，DefaultListableBeanFactory，前者继承自后者，而后者也是Spring中BeanFactory默认的全功能实现，ApplicationContext也是通过持有它而实现。<br>DefaultListableBeanFactory的使用需要我们去加载特定的配置资源，并配置解析器去解析，XmlBeanFactory只要求我们去加载需要的Xml配置资源。</p>
+<p>我们在项目中更推荐使用ApplicationContext，它的实现类常见的有WebApplicationContext等，它除了帮助我们实现了资源加载功能外，还提供了上述的高级功能。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://carrotwang.github.io/categories/index-1.html" data-id="ck2mqftl10007p9vz0i4vdgii" class="article-share-link">Share</a>
+      <a data-url="https://carrotwang.github.io/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/" data-id="ck2mqftll000jp9vz8gdjeutj" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Web/" rel="tag">Web</a></li></ul>
+
     </footer>
   </div>
   
     
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Netty源码阅读（关于ChannelPipeline和ChannelHandler）</div>
+    </a>
+  
+</nav>
+
   
 </article>
 

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Maven Profile集成Spring Profile | Carrot Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="我们在一个产品的生命周期内，会接触多个环节：开发环境、测试环境、生产环境，这些环境会对应不同的DataSource、Redis集群、Zookeeper等配置。  Maven的Profile机制Profile能让你为一个特殊的环境自定义一个特殊的构建；profile使得不同环境间构建的可移植性成为可能。Maven中的profile是一组可选的配置，可以用来设置或者覆盖配置默认值。有了profile，">
+<meta name="keywords" content="Java,Web,Spring,Maven">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Maven Profile集成Spring Profile">
+<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;2019&#x2F;11&#x2F;06&#x2F;Maven-Profile%E9%9B%86%E6%88%90Spring-Profile&#x2F;index.html">
+<meta property="og:site_name" content="Carrot Blog">
+<meta property="og:description" content="我们在一个产品的生命周期内，会接触多个环节：开发环境、测试环境、生产环境，这些环境会对应不同的DataSource、Redis集群、Zookeeper等配置。  Maven的Profile机制Profile能让你为一个特殊的环境自定义一个特殊的构建；profile使得不同环境间构建的可移植性成为可能。Maven中的profile是一组可选的配置，可以用来设置或者覆盖配置默认值。有了profile，">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-11-06T03:15:34.076Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Carrot Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Carrot Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">后端、大数据、Java、Go</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://carrotwang.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Maven-Profile集成Spring-Profile" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Maven-Profile%E9%9B%86%E6%88%90Spring-Profile/" class="article-date">
+  <time datetime="2019-11-06T03:12:02.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Maven Profile集成Spring Profile
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们在一个产品的生命周期内，会接触多个环节：开发环境、测试环境、生产环境，这些环境会对应不同的DataSource、Redis集群、Zookeeper等配置。</p>
+<ol>
+<li><p>Maven的Profile机制<br>Profile能让你为一个特殊的环境自定义一个特殊的构建；profile使得不同环境间构建的可移植性成为可能。Maven中的profile是一组可选的配置，可以用来设置或者覆盖配置默认值。有了profile，你就可以为不同的环境定制构建。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;project&gt;</span><br><span class="line">    &lt;profiles&gt;</span><br><span class="line">        &lt;profile&gt;</span><br><span class="line">            &lt;build&gt;</span><br><span class="line">                &lt;defaultGoal&gt;...&lt;/defaultGoal&gt;</span><br><span class="line">                &lt;finalName&gt;...&lt;/finalName&gt;</span><br><span class="line">                &lt;resources&gt;...&lt;/resources&gt;</span><br><span class="line">                &lt;testResources&gt;...&lt;/testResources&gt;</span><br><span class="line">                &lt;plugins&gt;...&lt;/plugins&gt;</span><br><span class="line">            &lt;/build&gt;</span><br><span class="line">            &lt;reporting&gt;...&lt;/reporting&gt;</span><br><span class="line">            &lt;modules&gt;...&lt;/modules&gt;</span><br><span class="line">            &lt;dependencies&gt;...&lt;/dependencies&gt;</span><br><span class="line">            &lt;dependencyManagement&gt;...&lt;/dependencyManagement&gt;</span><br><span class="line">            &lt;distributionManagement&gt;...&lt;/distributionManagement&gt;</span><br><span class="line">            &lt;repositories&gt;...&lt;/repositories&gt;</span><br><span class="line">            &lt;pluginRepositories&gt;...&lt;/pluginRepositories&gt;</span><br><span class="line">            &lt;properties&gt;...&lt;/properties&gt;</span><br><span class="line">        &lt;/profile&gt;</span><br><span class="line">    &lt;/profiles&gt;</span><br><span class="line">&lt;/project&gt;</span><br></pre></td></tr></table></figure>
+<p>　　一个Profile可以覆盖项目构件的最终名称，项目依赖，插件配置以影响构建行为，Profile还可以覆盖分发配置。maven提供了一种针对不同环境参数“激活”一个profile的方式，这就叫做profile激活。</p>
+</li>
+</ol>
+<p><strong>使用-P参数显示的激活一个profile</strong></p>
+<p>我们在进行Maven操作时就可以使用-P参数显示的指定当前激活的是哪一个profile了。比如我们需要在对项目进行打包的时候使用id为profileTest1的profile，我们就可以这样做：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn package –P profileTest1</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Spring Boot的支持<br>SpringBoot使用一个全局的配置文件<code>application.properties</code>或<code>application.yml</code>，配置文件路径：src/main/resource目录下或类路径下的/config下。</li>
+</ol>
+<p>Spring boot支持配置多个环境的配置文件，其配置文件名字格式<code>application-{profile}.yml</code></p>
+<p>Spring可以在<code>application.properties</code>指定激活的profile，配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#properties格式</span><br><span class="line">spring.profiles.active=dev</span><br></pre></td></tr></table></figure>
+<p>也可以在启动应用的时候添加启动参数<code>--spring.profiles.active=dev</code>。<br>（⚠️Spring Boot的Profile机制和Maven的其实是没关系的，文末给出了一篇博客，讲解了如何将Maven的Profile机制与Spring Boot的active profile机制同步，未验证）</p>
+<ol start="3">
+<li><p>微服务环境下的配置文件<br>前面介绍的两种方式，配置文件都显式的暴露在项目中，这对于实际运营的项目，是有比较多的问题的：</p>
+<ol>
+<li><p>对于在线运营的项目有安全隐患，数据库等信息都会暴露出来，给产品的安全带来很大的隐患</p>
+</li>
+<li><p>对于微服务场景，不利于维护<br> （1）配置分散在不同的项目中，不利于统一管理<br> （2）配置和代码处于同一个版本体系下，不利于版本管理<br> （3）多个系统共同使用的配置更改时，需要一处处去修改，非常麻烦，容易出错<br> （4）对于动态配置的文件，也不利于OPS维护<br>因此，业界普遍采用了Config Server的方式，Spring Cloud提供了Spring Cloud Config的组件，帮助我们管理微服务的配置。</p>
+<p>Consu可以l作为配置服务，并采用git存储。另外Spring Cloud Config也支持git版本管理，Consul在可用性的支持上更胜一筹；对于动态配置，Consul也会方便一些不需要借助Spring Cloud Bus这样的中间件。（Spring Cloud Bus将Spring的事件处理机制和消息中间件消息的发送和接收整合起来，可以轻松的将分布式应用中连接有消息中间件的多个服务节点连接起来，实现消息互通。）</p>
+</li>
+</ol>
+</li>
+</ol>
+<p>参考文献：<br><a href="https://www.cnblogs.com/wxgblogs/p/6696229.html（Maven" target="_blank" rel="noopener">https://www.cnblogs.com/wxgblogs/p/6696229.html（Maven</a> Profiles详解）<br><a href="https://www.jianshu.com/p/8c48f4fd69da（Profile之Maven、Spring" target="_blank" rel="noopener">https://www.jianshu.com/p/8c48f4fd69da（Profile之Maven、Spring</a> Boot、Spring Cloud Config）<br><a href="https://www.cnblogs.com/softidea/p/6375806.html（从Maven的Profile环境获取Spring" target="_blank" rel="noopener">https://www.cnblogs.com/softidea/p/6375806.html（从Maven的Profile环境获取Spring</a> Boot的active profile）<br><a href="https://yq.aliyun.com/articles/468274（阿里巴巴微服务配置中心介绍）" target="_blank" rel="noopener">https://yq.aliyun.com/articles/468274（阿里巴巴微服务配置中心介绍）</a><br><a href="https://www.jianshu.com/p/b1463c1df5a2（Consul作为微服务配置中心）" target="_blank" rel="noopener">https://www.jianshu.com/p/b1463c1df5a2（Consul作为微服务配置中心）</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Maven-Profile%E9%9B%86%E6%88%90Spring-Profile/" data-id="ck2mqftl00006p9vzcihagrmy" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Maven/" rel="tag">Maven</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Web/" rel="tag">Web</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Java日志框架(Slf4j vs Commons Logging)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/11/06/5%E5%88%86%E9%92%9Fflink%E6%9E%81%E7%AE%80%E5%85%A5%E9%97%A8/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">5分钟flink极简入门</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Web/">Java Web</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/flink/">flink</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Maven/" rel="tag">Maven</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Web/" rel="tag">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" rel="tag">实时计算</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Maven/" style="font-size: 10px;">Maven</a> <a href="/tags/Netty/" style="font-size: 17.5px;">Netty</a> <a href="/tags/Spring/" style="font-size: 12.5px;">Spring</a> <a href="/tags/Web/" style="font-size: 15px;">Web</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" style="font-size: 10px;">实时计算</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/">Spring IOC源码初探（一）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/">Netty源码阅读（关于ChannelPipeline和ChannelHandler）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/">Netty源码阅读（关于ByteBuf）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/">Netty源码阅读（整体介绍）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/">Java日志框架(Slf4j vs Commons Logging)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Wandering Carrot<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

@@ -65,6 +65,499 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Spring-IOC源码初探（一）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T03:36:37.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/">Spring IOC源码初探（一）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Spring提供了两个基本功能：IOC和AOP，基于此形成了Spring的生态环境，其中IOC又是整个Spring生态的基础，也就是IOC是Spring最核心的功能。</p>
+<p>Spring IOC即反向控制，也可以叫依赖注入，把bean（组件）的初始化工作交给IOC容器，而不是在程序中完成，这就将组件的初始化和组件真正的核心功能相隔离，做到了解耦；另外，Spring IOC提倡面向接口编程，同样是为了解耦。Spring帮助我们使软件的结构符合，开闭原则（对修改封闭，对扩展开发：不需要修改代码来增加新的功能），是解耦组件依赖关系的利器。</p>
+<p>下面我们通过对Spring IOC机制源码的学习，更好的理解Spring的IOC功能。</p>
+<p>将从组成和行为两个角度来粗略分析Spring IOC容器，本文注意基于Spring IOC容器的组成来分析。</p>
+<p>Spring容器主要指BeanFactory或者ApplicationContext，而我们常用的是后者。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/11480144-d295c72675faa1d9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Spring的容器的继承关系图"></p>
+<p>由此图，我们可以看到Spring容器继承关系的一个结构图。核心接口就是BeanFactory，它提供了容器的基本方法getBean以获得容器内的组件，HierarchicalBeanFactory，ListableBeanFactory，AutowireCapableBeanFactory三个接口分别继承自BeanFactory，并对BeanFactory的功能做了扩展。HierarchicalBeanFactory提供了父子容器的功能，ListableBeanFactory提供了容器内Bean的列表操作功能，AutowireCapableBeanFactory则提供了Bean的自动装配功能；ConfigurableBeanFactory则提供了BeanFactory的一些配置功能；这就是BeanFactory接口层次关系图，XmlBeanFactory是一个常见的BeanFactory实现它就实现了上述接口以提供完整的容器功能，同样依照此接口层次实现也可以达到解耦、职责清晰的目的。</p>
+<p>ApplicationContext同样拥有BeanFactory的上述能力，所以它继承了BeanFactory体系的大部分接口，上图中有一点是不准确的，ApplicationContext并未继承AutowireCapableBeanFactory，它的实现类是通过持有BeanFactory实例来拥有自动装配的功能（它不对外暴露自动装配功能），特别地，ApplicationContext实现了MessageSource、ResourceLoader、ApplicationEventPublisher三个接口，以拥有对国际化、加载资源、事件机制的支持。</p>
+<p>常见的BeanFactory实现有XmlBeanFactory，DefaultListableBeanFactory，前者继承自后者，而后者也是Spring中BeanFactory默认的全功能实现，ApplicationContext也是通过持有它而实现。<br>DefaultListableBeanFactory的使用需要我们去加载特定的配置资源，并配置解析器去解析，XmlBeanFactory只要求我们去加载需要的Xml配置资源。</p>
+<p>我们在项目中更推荐使用ApplicationContext，它的实现类常见的有WebApplicationContext等，它除了帮助我们实现了资源加载功能外，还提供了上述的高级功能。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/" data-id="ck2mqftll000jp9vz8gdjeutj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Web/" rel="tag">Web</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Netty源码阅读（关于ChannelPipeline和ChannelHandler）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T03:30:53.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/">Netty源码阅读（关于ChannelPipeline和ChannelHandler）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>1.ChannelPipeline<br>其实，关于ChannelPipeline的东西主要就是一个责任链模式，另外就是是Channel、ChannelPipeline、Handler和ChannelContext的关系，在整体介绍一文中，已经讲的比较清楚了，在此不再赘述。</p>
+<p>2.ChannelHandler</p>
+<p>关于Handler的部分应该是比较好理解的，这也正是我们在开发中接触最多的部分（这体现了Netty给我们提供了一个易用的编程模型）。</p>
+<p>Netty内置了许多有用的ChannelHandler，比如解决粘包问题的Handler，各种编解码Handler，日志Handler，心跳Handler等，极大的方便了我们的开发。</p>
+<p>（1）Handler解决粘包问题</p>
+<p>（2）Handler解决心跳</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/" data-id="ck2mqftl6000ap9vz2zcpc62t" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Netty源码阅读（关于ByteBuf）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T03:27:37.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/">Netty源码阅读（关于ByteBuf）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ByteBuf接口提供了一套简单易用的API，并实现了对NIO ByteBuffer的兼容，其实现有“非池化的堆内存Buffer”，“非池化的直接内存Buffer”，“池化的堆内存Buffer”，“池化的直接内存Buffer”，另外ByteBuf的实现提供了对内存泄漏不同级别的监控。</p>
+<p>ByteBuf的内存池实现，ByteBuf对内存泄漏的监控，是我比较感兴趣的两个地方。</p>
+<p>1.ByteBuf的内存池实现</p>
+<pre><code>这里是最繁杂、最难的部分，这里后面补上。</code></pre><p>2.ByteBuf对内存泄露的监控<br>  Netty的内存监控是针对内存池和直接内存而言的，对于HeapByteBuf自有虚拟机完成GC。</p>
+<p>对于内存池而言，内存泄漏产生在Buffer已经使用完，但是这块内存还没有归还给内存池，对于直接内存的内存泄漏，是Buffer使用完，直接内存没有被回收（虚拟机不会自动回收直接内存）。</p>
+<p>ByteBuf有release和retain两个接口，由AbstractReferenceCountedByteBuf实现，分别表示对Buffer引用数目的减少和增加，当release后引用数目为0时，会对Buffer进行回收。对于内存池内的Buffer以及直接内存Buffer需要我们显式调用release进行回收。忘记调用release方法就会发生内存泄漏，特别是对于内存池而言，内存池会不断变大占用大量内存。</p>
+<p>对于内存泄漏的监控，Netty有四个级别：Disabled，Simple，Advanced，Paranoid；分别对应不同的监控频率和性能损耗。那么Netty是如何实现内存监控的呢？</p>
+<p>可以查看AbstractByteBufAllocator类的toLeakAwareBuffer方法，这里实际上利用了装饰器模式，以SimpleLeakAwareByteBuf为例，它持有实际起作用的ByteBuf实例，以及一个ResourceLeakTracker，ResourceLeakTracker的实现类DefaultResourceLeak继承了PhantomReference，ResourceLeakDetector将一个ReferenceQueue传入ResourceLeakTracker，这样在SimpleLeakAwareByteBuf引用被回收后，ReferenceQueue就被插入对应的refernce，我们就可以知道某个ByteBuf不再被使用了。</p>
+<p>但是我们如何得知这个ByteBuf是否被释放了呢？</p>
+<p>这是由一个ConcurrentHashMap来决定的，它存储的key就是DefaultResourceLeak（value应该是内存泄露的相关信息），当调用release并确定可以回收时，会把map中对应的key清除掉，这样ResourceLeakDetector会定期检查ReferenceQueue，当其中存在reference时，会查看map中是否也存在，如果也存在，那么就可以确认发生内存泄露了。<br>（ReferenceQueue和ConcurrentHashMap都在ResourceLeakDetector中）</p>
+<p>关于内存泄露监控机制的不同级别，以Simple为例，我们查看AbstractByteBufAllocator的toLeakAwareBuffer方法，一路查到ResourceLeakDetector的track0方法，该方法内可以看到实际上是使用线程安全的随机数对设定的参数（默认应该是100）取余为0时，返回DefaultResourceLeak，并检查是否发生内存泄漏，否则返回null，当级别为Disable时，直接返回null，并不做检查，这样就没有性能损耗了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/" data-id="ck2mqftl30008p9vz1urpd4rn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Netty源码阅读（整体介绍）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T03:24:59.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/">Netty源码阅读（整体介绍）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="一-Netty做了什么？"><a href="#一-Netty做了什么？" class="headerlink" title="一. Netty做了什么？"></a>一. Netty做了什么？</h1><p>1.Netty实现了对Java NIO的封装，提供了更方便使用的接口；</p>
+<p>2.Netty利用责任链模式实现了ChannelPipeline这一概念，基于ChannelPipeline，我们可以 优雅的实现网络消息的处理（可插拔，解耦）；</p>
+<p>3.Netty的Reactor线程模型，利用无锁化提高了系统的性能；</p>
+<p>4.Netty实现了ByteBuf用于对字节进行缓存和操作，相比JDK的ByteBuffer，它更易用，同时还提供了Buffer池的功能，对于UnpooledDirectByteBuf和PooledByteBuf，Netty还对其内存使用进行了跟踪，发现内存泄漏时会给出报警；</p>
+<h1 id="二-Netty对JDK-NIO的封装"><a href="#二-Netty对JDK-NIO的封装" class="headerlink" title="二.Netty对JDK NIO的封装"></a>二.Netty对JDK NIO的封装</h1><p>JDK NIO有ServerSocketChannel、SocketChannel、Selector、SelectionKey几个核心概念。</p>
+<p>Netty提供了一个Channel接口统一了对网络的IO操作，其底层的IO通信是交给Unsafe接口实现，而Channel主要负责更高层次的read、write、flush、和ChannelPipeline、Eventloop等组件的交互，以及一些状态的展示；做到了职责的清晰划分，对使用者是很友好的，规避了JDK NIO中一些比较繁琐复杂的概念和流程。</p>
+<p>Channel、Unsafe继承UML图</p>
+<p>Channel和Unsafe是分多级别实现的，不同级别的Channel和Unsafe对应了不同级别的实现，也是“职责单一原则”的体现。</p>
+<h1 id="三-ChannelPipeline责任链模型"><a href="#三-ChannelPipeline责任链模型" class="headerlink" title="三.ChannelPipeline责任链模型"></a>三.ChannelPipeline责任链模型</h1><p>借用网上的一张图表示Channel、ChannelPipeline、ChannelHandlerContext和ChannelHandler之间的关系。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/11480144-ac2962bdfa01d569.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img"></p>
+<p>每个Channel都持有一个ChannelPipeline，通过Channel的读写等IO操作实际上是交由ChannelPipeline处理的，而ChannelPipeline会持有一个ChannelHandlerContext链表，每个Context内部又包含一个ChannelHandler，使用者在Pipeline上添加handler负责逻辑处理，ChannelHandlerContext负责事件的传递流转。每个ChannelPipeline都会持有2个特殊的ChannelHandlerContext——head和tail，他们分别是Context链表的头和尾。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/11480144-8d95f1dd0f1a24ba.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img"></p>
+<p>ChannelPipeline上的事件，分为Inbound事件和Outbound事件2种，Inbound事件从headContext读入，在Context链上的InboundHandler上正向依次流动；Outbound事件从Channel（即ChannelPipeline）上触发，则从tailContext上出发，在Context链上的OutboundHandler上反向依次流动，若从某一个Context上触发，则从这个Context之后的下一个OutboundContext开始执行。headContext利用Unsafe完成实际的IO操作。</p>
+<p>我们在使用Netty的时候，业务逻辑其实基本都存在于ChannelHandler；Netty也为我们提供了很多通用的Handler，如一些常用的编解码Handler，常见应用层协议的Handler，整流、心跳、日志等常用功能的Handler，合理使用这些Handler能迅速提高我们开发的效率。</p>
+<h1 id="四-Reactor线程模型"><a href="#四-Reactor线程模型" class="headerlink" title="四.Reactor线程模型"></a>四.Reactor线程模型</h1><p>Reactor模型是一种常见的并发编程模型，关于React模型可以参考这篇文章<a href="https://www.cnblogs.com/dirt2/p/5590320.html" target="_blank" rel="noopener">Reactor模型</a>，React模型改变了Thread Per Connection的模式，它将一个网络IO操作分为2部分：连接的建立，网络通信及消息处理；这两部分分别用单独的线程池去处理（一般情况下，连接的建立用单独的一个线程就足够了），这样做的好处如下：功能解耦、利于维护、利于组件化复用、方便细粒度的并发控制，另外可以通过减少线程数，避免大量的线程切换。其模型图如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/11480144-0e945daba57ed900.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="img"></p>
+<p>简单的说，一个Reactor线程（池）负责接收所有的连接请求，然后将连接产生的Channel赋给Work线程池中的线程，接下来的通信操作都交给Work线程执行。</p>
+<p>Netty结合NIO的特点合理的使用了Reactor模型，具体地说，Netty的Reactor线程接收到一个连接请求后，会创建一个Channel，并为这个Channel分配一个EventLoop，每个EventLoop对应一个线程，Channel上的IO操作将在EventLoop上执行，一个Channel仅绑定在一个EventLoop上，一个EventLoop可以对应多个Channel，这样就避免了同步，也提高了线程的使用效率。</p>
+<p>实际上，EventLoop中的线程除了执行IO操作，还会执行ChannelPipeline上的handler的责任链方法，这样做是为了避免频换切换线程带来的损耗，所以handler中一般不可以放置耗时的任务，如果有耗时的任务，可以将任务放入自定义的线程池中执行。</p>
+<h1 id="五-ByteBuf"><a href="#五-ByteBuf" class="headerlink" title="五.ByteBuf"></a>五.ByteBuf</h1><p>Java的NIO给我们提供了缓冲区的实现ByteBuffer，但是它的易用性较差（读写模式需要切换等问题），所以，Netty自己重新实现了缓冲区ByteBuf，ByteBuf的API更易用、并且提供了内存池的功能，对于池化的ByteBuf和直接内存的ByteBuf，Netty还提供了对内存泄漏的监控（并且设置了各种性能级别），另外ByteBuf还提供了对ByteBuffer的兼容。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/" data-id="ck2mqftld000fp9vz7dojbekt" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Java日志框架-Slf4j-vs-Commons-Logging" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/" class="article-date">
+  <time datetime="2019-11-06T03:20:18.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/">Java日志框架(Slf4j vs Commons Logging)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近，新开发的一个项目遇到了一个log4j的配置问题，之前一直没怎么关注过日志框架，借助这个机会，好好了解下Java的日志框架，便于以后更好的使用。</p>
+<p>本文重点介绍了：Java日志框架生态、Java日志框架的结构组成、Slf4j替代Commons Logging。</p>
+<p>Java常用的日志框架如下：</p>
+<ol>
+<li>Commons Logging：Apache基金会所属的项目，是一套Java日志接口；</li>
+<li>Slf4j：是一套简易Java日志门面，本身并无日志的实现。（Simple Logging Facade for Java，缩写Slf4j）；</li>
+<li>log4j：Apache Log4j是一个基于Java的日志记录工具；</li>
+<li>log4j 2：Apache Log4j 2是apache开发的一款Log4j的升级产品，不兼容log4j 1；</li>
+<li>Logback：一套日志组件的实现(slf4j阵营)；</li>
+<li>Jul：Java Util Logging，自Java1.4以来的官方日志实现。</li>
+</ol>
+<p>现今，Java日志领域被划分为两大阵营：Commons Logging阵营和SLF4J阵营。</p>
+<h2 id="各日志框架之间的关系："><a href="#各日志框架之间的关系：" class="headerlink" title="各日志框架之间的关系："></a>各日志框架之间的关系：</h2><ol>
+<li>Commons Logging和Slf4j是两个日志门面框架，系统不和日志实现耦合，日志门面作为接待员，方便日志实现的替换（如：log4j2替换log4j1）；</li>
+<li>Commons Logging和log4j1、2配合使用，Slf4j和Logback组合使用；</li>
+<li>新项目建议使用Slf4j与Logback组合；</li>
+</ol>
+<p>##桥接原理分析<br>桥接器原本语境是使用在网络中数据包的转发，在日志框架里，主要是日志门面寻找日志实现类的类。<br><img src="https://upload-images.jianshu.io/upload_images/11480144-cfde09ca173abd67.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="log.png"></p>
+<p>Slf4j在获取日志框架实现时扫描class path，寻找org.slf4j.impl.StaticLoggerBinder（有多个，会打印警告日志，并选择遇到的第一个），桥接器就是提供桥接来实现类和接口类之间的适配。</p>
+<p>对于Commons Logging，其寻找Logger实现的步骤如下：</p>
+<ol>
+<li>首先，寻找org.apache.commons.logging.LogFactory 属性配置</li>
+<li>否则，利用JDK1.3 开始提供的service 发现机制，会扫描classpah 下的META-INF/services/org.apache.commons.logging.LogFactory 文件，若找到则装载里面的配置，使用里面的配置。</li>
+<li>否则，从Classpath 里寻找commons-logging.properties ，找到则根据里面的配置加载。</li>
+<li>否则，使用默认的配置：如果能找到Log4j 则默认使用log4j 实现，如果没有则使用JDK14Logger 实现，再没有则使用commons-logging 内部提供的SimpleLog 实现。</li>
+</ol>
+<p><strong>Slf4j和Commons Logging获取Logger的区别</strong>：<br>Slf4j扫描classpath获取StaticLoggerBinder，通过StaticLoggerBinder的静态绑定逻辑获取Logger。<br>Commons Logging是采用ClassLoader动态的获取Logger，在一些情况下会产生ClassLoader的问题（如OSGI，主要原因在文末Ceki Gülcü的一片参考文献有提及）</p>
+<h2 id="Slf4j-amp-Logback的优势"><a href="#Slf4j-amp-Logback的优势" class="headerlink" title="Slf4j&amp;Logback的优势"></a>Slf4j&amp;Logback的优势</h2><ol>
+<li>Slf4j的静态绑定实现机制决定了其更加通用；</li>
+<li>Logback拥有更好的性能；<br>Logback声称：某些关键操作，比如判定是否记录一条日志语句的操作，其性能得到了显著的提高。这个操作在Logback中需要3纳秒，而在Log4J中则需要30纳秒。LogBack创建记录器（logger）的速度也更快：13毫秒，而在Log4J中需要23毫秒。更重要的是，它获取已存在的记录器只需94纳秒，而Log4J需要2234纳秒，时间减少到了1/23。跟JUL相比的性能提高也是显著的。</li>
+<li>自动重新加载配置文件，当配置文件修改了，Logback-classic能自动重新加载配置文件<br>…</li>
+</ol>
+<p>##LogBack结构<br>Java日志框架由3部分组成，分别是Logger，Formatter，Appender。<br>Logger：用来接收用户输入的内容；<br>Formatter：用来格式化日志内容；<br>Appender：将日志内容输出到Console，socket，文件，数据库，邮件等。<br>在Logback中，则分别对应于Logger、Layout、Appender。</p>
+<ol>
+<li><p>Logger<br>   Logger有三点需要重点关注：名字属性、Level属性，如何获取。<br>   （1）每个Logger都有一个名字，并且有父子、子孙层次关系；</p>
+<pre><code>存在一个特殊的Logger实例，它的名字为“org.slf4j.Logger.ROOT_LOGGER_NAME”，即“ROOT”</code></pre><p>   （2）Logger实例应该设置Level属性，如果某个Logger实例的Level属性未设置，那么沿着Logger实例的层次关系向上回溯直到最顶层的”ROOT”Logger实例为止。<br>   （3）在Logback运行的时候，LoggerContext类实例会维护一个类型为Map&lt;String, Logger&gt;的map对象loggerCache，它的key为Logger实例的名字，它的value为对应的Logger实例。<br>当我们执行”LoggerFactory.getLogger(‘xxx’)”语句，来检索名字为”xxx”的Logger实例时，LoggerContext类实例会先去查看loggerCache对象，看是否已经存在名字为”xxx”的Logger实例，如果存在，直接返回；否则，先创建好Logger实例（注意这里创建Logger实例的时候，会把loggerCache中不存在的祖先和父亲Logger实例都创建好）并放入loggerCache中，最后返回刚创建好的Logger实例。<br>即在Logback运行的时候，相同名字的Logger实例只保存一份。</p>
+</li>
+<li><p>Layout<br>   绑定在Appender上，用来格式化Appender的输出</p>
+</li>
+<li><p>Appender<br>  Appender代表日志输出目的地，可以是Console, File, Sockets, DataBase等等。<br>一个Logger实例上可以绑定0到多个Appender实例，当在该Logger实例上产生的日志记录请求是有效的情况下，日志记录请求会被发送到所有绑定在该Logger实例上的Appender实例。<br>一个Logger实例上绑定的Appender实例不仅来自自身的绑定，也来自祖先和父亲Logger实例的Appender绑定，即可以继承祖先和父亲Logger实例绑定的Appender实例。</p>
+</li>
+</ol>
+<h2 id="Slf4j替代Commons-Logging"><a href="#Slf4j替代Commons-Logging" class="headerlink" title="Slf4j替代Commons Logging"></a>Slf4j替代Commons Logging</h2><p>Java生态有许多日志工具，不同的组件可能会使用不同的日志框架，为了不对日志框架产生依赖，Apache引入了Commons Logging门面框架，不过当程序规模越来越庞大时，JCL的动态绑定并不是总能成功。Slf4j的静态绑定功能解决了这一问题，然而，依赖的组件中可能会有使用了Commons Logging的组件，Slf4j提供了jcl-over-slf4j.jar ，可以借助jcl-over-slf4j.jar 讲Commons Logging输出的日志引入到Slf4j中。<br>Component(服务)<br>      | |<br> log to Apache Commons Logging(JCL)<br>      V<br>jcl-over-slf4j.jar — (redirect) —&gt; SLF4j —&gt; slf4j-log4j12-version.jar —&gt; log4j.jar —&gt; 输出日志<br>（另外也可以删除所有Commons Logging的依赖，不过这太繁琐了，也容易出问题）。</p>
+<p>参考文献：<br><a href="https://www.cnblogs.com/chenhongliang/p/5312517.html（各日志框架介绍）" target="_blank" rel="noopener">https://www.cnblogs.com/chenhongliang/p/5312517.html（各日志框架介绍）</a><br><a href="https://www.cnblogs.com/crazyrunning/p/6145890.html（日志门面的作用）" target="_blank" rel="noopener">https://www.cnblogs.com/crazyrunning/p/6145890.html（日志门面的作用）</a><br><a href="http://www.runoob.com/design-pattern/facade-pattern.html（门面模式）" target="_blank" rel="noopener">http://www.runoob.com/design-pattern/facade-pattern.html（门面模式）</a><br><a href="https://blog.csdn.net/jpf254/article/details/80757041（Slf4j桥接原理）" target="_blank" rel="noopener">https://blog.csdn.net/jpf254/article/details/80757041（Slf4j桥接原理）</a><br><a href="http://singleant.iteye.com/blog/934593（commons-logging" target="_blank" rel="noopener">http://singleant.iteye.com/blog/934593（commons-logging</a>  Logger实现加载步骤）<br><a href="https://blog.csdn.net/dslztx/article/details/47450741（Logback详解）" target="_blank" rel="noopener">https://blog.csdn.net/dslztx/article/details/47450741（Logback详解）</a><br><a href="https://articles.qos.ch/classloader.html（Ceki" target="_blank" rel="noopener">https://articles.qos.ch/classloader.html（Ceki</a> Gülcü控诉了Commons Logging的弊端😂）<br><a href="https://blog.csdn.net/zbajie001/article/details/79596109（Logback的优点）" target="_blank" rel="noopener">https://blog.csdn.net/zbajie001/article/details/79596109（Logback的优点）</a><br><a href="https://blog.csdn.net/javaloveiphone/article/details/52486257（Slf4j替代Commons" target="_blank" rel="noopener">https://blog.csdn.net/javaloveiphone/article/details/52486257（Slf4j替代Commons</a> Logging）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/" data-id="ck2mqftks0002p9vz4bt28njp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Web/" rel="tag">Web</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Maven-Profile集成Spring-Profile" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Maven-Profile%E9%9B%86%E6%88%90Spring-Profile/" class="article-date">
+  <time datetime="2019-11-06T03:12:02.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Maven-Profile%E9%9B%86%E6%88%90Spring-Profile/">Maven Profile集成Spring Profile</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们在一个产品的生命周期内，会接触多个环节：开发环境、测试环境、生产环境，这些环境会对应不同的DataSource、Redis集群、Zookeeper等配置。</p>
+<ol>
+<li><p>Maven的Profile机制<br>Profile能让你为一个特殊的环境自定义一个特殊的构建；profile使得不同环境间构建的可移植性成为可能。Maven中的profile是一组可选的配置，可以用来设置或者覆盖配置默认值。有了profile，你就可以为不同的环境定制构建。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;project&gt;</span><br><span class="line">    &lt;profiles&gt;</span><br><span class="line">        &lt;profile&gt;</span><br><span class="line">            &lt;build&gt;</span><br><span class="line">                &lt;defaultGoal&gt;...&lt;/defaultGoal&gt;</span><br><span class="line">                &lt;finalName&gt;...&lt;/finalName&gt;</span><br><span class="line">                &lt;resources&gt;...&lt;/resources&gt;</span><br><span class="line">                &lt;testResources&gt;...&lt;/testResources&gt;</span><br><span class="line">                &lt;plugins&gt;...&lt;/plugins&gt;</span><br><span class="line">            &lt;/build&gt;</span><br><span class="line">            &lt;reporting&gt;...&lt;/reporting&gt;</span><br><span class="line">            &lt;modules&gt;...&lt;/modules&gt;</span><br><span class="line">            &lt;dependencies&gt;...&lt;/dependencies&gt;</span><br><span class="line">            &lt;dependencyManagement&gt;...&lt;/dependencyManagement&gt;</span><br><span class="line">            &lt;distributionManagement&gt;...&lt;/distributionManagement&gt;</span><br><span class="line">            &lt;repositories&gt;...&lt;/repositories&gt;</span><br><span class="line">            &lt;pluginRepositories&gt;...&lt;/pluginRepositories&gt;</span><br><span class="line">            &lt;properties&gt;...&lt;/properties&gt;</span><br><span class="line">        &lt;/profile&gt;</span><br><span class="line">    &lt;/profiles&gt;</span><br><span class="line">&lt;/project&gt;</span><br></pre></td></tr></table></figure>
+<p>　　一个Profile可以覆盖项目构件的最终名称，项目依赖，插件配置以影响构建行为，Profile还可以覆盖分发配置。maven提供了一种针对不同环境参数“激活”一个profile的方式，这就叫做profile激活。</p>
+</li>
+</ol>
+<p><strong>使用-P参数显示的激活一个profile</strong></p>
+<p>我们在进行Maven操作时就可以使用-P参数显示的指定当前激活的是哪一个profile了。比如我们需要在对项目进行打包的时候使用id为profileTest1的profile，我们就可以这样做：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn package –P profileTest1</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Spring Boot的支持<br>SpringBoot使用一个全局的配置文件<code>application.properties</code>或<code>application.yml</code>，配置文件路径：src/main/resource目录下或类路径下的/config下。</li>
+</ol>
+<p>Spring boot支持配置多个环境的配置文件，其配置文件名字格式<code>application-{profile}.yml</code></p>
+<p>Spring可以在<code>application.properties</code>指定激活的profile，配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#properties格式</span><br><span class="line">spring.profiles.active=dev</span><br></pre></td></tr></table></figure>
+<p>也可以在启动应用的时候添加启动参数<code>--spring.profiles.active=dev</code>。<br>（⚠️Spring Boot的Profile机制和Maven的其实是没关系的，文末给出了一篇博客，讲解了如何将Maven的Profile机制与Spring Boot的active profile机制同步，未验证）</p>
+<ol start="3">
+<li><p>微服务环境下的配置文件<br>前面介绍的两种方式，配置文件都显式的暴露在项目中，这对于实际运营的项目，是有比较多的问题的：</p>
+<ol>
+<li><p>对于在线运营的项目有安全隐患，数据库等信息都会暴露出来，给产品的安全带来很大的隐患</p>
+</li>
+<li><p>对于微服务场景，不利于维护<br> （1）配置分散在不同的项目中，不利于统一管理<br> （2）配置和代码处于同一个版本体系下，不利于版本管理<br> （3）多个系统共同使用的配置更改时，需要一处处去修改，非常麻烦，容易出错<br> （4）对于动态配置的文件，也不利于OPS维护<br>因此，业界普遍采用了Config Server的方式，Spring Cloud提供了Spring Cloud Config的组件，帮助我们管理微服务的配置。</p>
+<p>Consu可以l作为配置服务，并采用git存储。另外Spring Cloud Config也支持git版本管理，Consul在可用性的支持上更胜一筹；对于动态配置，Consul也会方便一些不需要借助Spring Cloud Bus这样的中间件。（Spring Cloud Bus将Spring的事件处理机制和消息中间件消息的发送和接收整合起来，可以轻松的将分布式应用中连接有消息中间件的多个服务节点连接起来，实现消息互通。）</p>
+</li>
+</ol>
+</li>
+</ol>
+<p>参考文献：<br><a href="https://www.cnblogs.com/wxgblogs/p/6696229.html（Maven" target="_blank" rel="noopener">https://www.cnblogs.com/wxgblogs/p/6696229.html（Maven</a> Profiles详解）<br><a href="https://www.jianshu.com/p/8c48f4fd69da（Profile之Maven、Spring" target="_blank" rel="noopener">https://www.jianshu.com/p/8c48f4fd69da（Profile之Maven、Spring</a> Boot、Spring Cloud Config）<br><a href="https://www.cnblogs.com/softidea/p/6375806.html（从Maven的Profile环境获取Spring" target="_blank" rel="noopener">https://www.cnblogs.com/softidea/p/6375806.html（从Maven的Profile环境获取Spring</a> Boot的active profile）<br><a href="https://yq.aliyun.com/articles/468274（阿里巴巴微服务配置中心介绍）" target="_blank" rel="noopener">https://yq.aliyun.com/articles/468274（阿里巴巴微服务配置中心介绍）</a><br><a href="https://www.jianshu.com/p/b1463c1df5a2（Consul作为微服务配置中心）" target="_blank" rel="noopener">https://www.jianshu.com/p/b1463c1df5a2（Consul作为微服务配置中心）</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Maven-Profile%E9%9B%86%E6%88%90Spring-Profile/" data-id="ck2mqftl00006p9vzcihagrmy" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Maven/" rel="tag">Maven</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Web/" rel="tag">Web</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-5分钟flink极简入门" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/5%E5%88%86%E9%92%9Fflink%E6%9E%81%E7%AE%80%E5%85%A5%E9%97%A8/" class="article-date">
+  <time datetime="2019-11-06T01:59:03.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/flink/">flink</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/5%E5%88%86%E9%92%9Fflink%E6%9E%81%E7%AE%80%E5%85%A5%E9%97%A8/">5分钟flink极简入门</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/5%E5%88%86%E9%92%9Fflink%E6%9E%81%E7%AE%80%E5%85%A5%E9%97%A8/" data-id="ck2mqftkg0000p9vz1jtj0k95" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" rel="tag">实时计算</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Netty源码阅读（序）" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%BA%8F%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T01:33:07.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%BA%8F%EF%BC%89/">Netty源码阅读（序）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>参加的阿里中间件性能挑战赛用到了Netty，就决定利用这个机会，读一读Netty的源码。首先，我认为阅读源码大致有2个主要目的，1.了解Netty的内部机制，更好的使用Netty；2.学习Netty的实现，比如池化的ByteBuf、以及EventLoop的责任链模式，我认为都有很多值得借鉴，可以用在工作中的技巧和思想；3.可以看一看比较复杂的框架代码的组织结构、代码风格，并做一些思考🤔。</p>
+<p>阅读源码之前，首先要有一个大局观，就是Netty解决了什么问题，有什么优点，主要有哪些模块组成？</p>
+<p>另外，我认为带着问题去阅读，才能够带来更多的收获。所以，我想在这次阅读源码的过程中，能够回答以下这些问题：</p>
+<ol>
+<li><p>Netty有哪些主要组成部分？</p>
+<p> Channel、ChannelPipeline、ChannelHandler、Eventloop、ChannelFuture、Bootstrap等。</p>
+</li>
+<li><p>Netty如何对Java NIO进行的封装？</p>
+<p> Netty的Channel借助门面模式，(1)封装了和网络相关的操作，提供了统一的视图（对于ServerSocketChannel和SocketChannel），其底层IO操作是由UnSafe接口实现的，而Channel的骨骼类AbstractChannel只是调用了ChannelPipeline的相应方法让事件在责任链上传递依次处理，ChannelPipeline上的HeadContext调用UnSafe的方法执行实际的IO操作；（2）封装了对Channel接口的配置参数操作（3）维护了Channel的状态（readable，writable，open，active等）（4）Channel接口还聚合了ChannelPipeline接口，而ChannelPipeline用于处理所有的IO事件。</p>
+</li>
+<li><p>Netty如何利用无锁化做到的高性能？</p>
+</li>
+<li><p>netty如何监控内存泄漏？</p>
+</li>
+<li><p>netty如何实现的buffer池？</p>
+</li>
+<li><p>netty在代码设计方面值得学习的地方？</p>
+</li>
+</ol>
+<p>最后，给出一些我初次阅读较大项目源码的一些思考：</p>
+<ol>
+<li>先了解整体框架，再去找感兴趣的部分去读；</li>
+</ol>
+<p>2.带着问题去读；</p>
+<p>3.阅读Netty源码是一个学习并发编程，网络编程极好的方式。</p>
+<p>Netty中的设计模式：</p>
+<pre><code>观察者模式：Future，Listener
+
+责任链模式：ChannelPipeline
+
+门面模式：Channel统一封装了网络操作。
+
+适配器模式：ChannelInboundHandlerAdapter
+
+装饰器模式：SimpleLeakAwareByteBuf</code></pre><p>io.netty.util.concurrent.SingleThreadEventExecutor#wakeup  什么作用？</p>
+<p>Netty中的死锁问题？</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%BA%8F%EF%BC%89/" data-id="ck2mqftl9000ep9vz8qmkf0tq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/11/05/hello-world/" class="article-date">
@@ -108,9 +601,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://carrotwang.github.io/2019/11/05/hello-world/" data-id="ck2mm7z1900015evz23sy2j8b" class="article-share-link">Share</a>
+      <a data-url="https://carrotwang.github.io/2019/11/05/hello-world/" data-id="ck2mqftln000kp9vz5jpne32f" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li></ul>
+
     </footer>
   </div>
   
@@ -128,16 +623,30 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Web/">Java Web</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/flink/">flink</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li></ul>
     </div>
   </div>
 
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Maven/" rel="tag">Maven</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Web/" rel="tag">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" rel="tag">实时计算</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Maven/" style="font-size: 10px;">Maven</a> <a href="/tags/Netty/" style="font-size: 17.5px;">Netty</a> <a href="/tags/Spring/" style="font-size: 12.5px;">Spring</a> <a href="/tags/Web/" style="font-size: 15px;">Web</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" style="font-size: 10px;">实时计算</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
@@ -156,7 +665,23 @@
       <ul>
         
           <li>
-            <a href="/2019/11/05/hello-world/">Hello World</a>
+            <a href="/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/">Spring IOC源码初探（一）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/">Netty源码阅读（关于ChannelPipeline和ChannelHandler）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/">Netty源码阅读（关于ByteBuf）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/">Netty源码阅读（整体介绍）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/">Java日志框架(Slf4j vs Commons Logging)</a>
           </li>
         
       </ul>

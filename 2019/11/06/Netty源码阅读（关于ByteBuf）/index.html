@@ -5,14 +5,17 @@
   
 
   
-  <title>categories | Carrot Blog</title>
+  <title>Netty源码阅读（关于ByteBuf） | Carrot Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;categories&#x2F;index-1.html">
+  <meta name="description" content="ByteBuf接口提供了一套简单易用的API，并实现了对NIO ByteBuffer的兼容，其实现有“非池化的堆内存Buffer”，“非池化的直接内存Buffer”，“池化的堆内存Buffer”，“池化的直接内存Buffer”，另外ByteBuf的实现提供了对内存泄漏不同级别的监控。 ByteBuf的内存池实现，ByteBuf对内存泄漏的监控，是我比较感兴趣的两个地方。 1.ByteBuf的内存池">
+<meta name="keywords" content="Java,Netty">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Netty源码阅读（关于ByteBuf）">
+<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;2019&#x2F;11&#x2F;06&#x2F;Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89&#x2F;index.html">
 <meta property="og:site_name" content="Carrot Blog">
+<meta property="og:description" content="ByteBuf接口提供了一套简单易用的API，并实现了对NIO ByteBuffer的兼容，其实现有“非池化的堆内存Buffer”，“非池化的直接内存Buffer”，“池化的堆内存Buffer”，“池化的直接内存Buffer”，另外ByteBuf的实现提供了对内存泄漏不同级别的监控。 ByteBuf的内存池实现，ByteBuf对内存泄漏的监控，是我比较感兴趣的两个地方。 1.ByteBuf的内存池">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-11-05T08:40:36.897Z">
+<meta property="og:updated_time" content="2019-11-06T03:28:41.407Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Carrot Blog" type="application/atom+xml">
@@ -64,12 +67,16 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="page-" class="article article-type-page" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Netty源码阅读（关于ByteBuf）" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/categories/index-1.html" class="article-date">
-  <time datetime="2019-11-05T08:40:36.000Z" itemprop="datePublished">2019-11-05</time>
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/" class="article-date">
+  <time datetime="2019-11-06T03:27:37.000Z" itemprop="datePublished">2019-11-06</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -78,7 +85,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      categories
+      Netty源码阅读（关于ByteBuf）
     </h1>
   
 
@@ -86,17 +93,49 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>ByteBuf接口提供了一套简单易用的API，并实现了对NIO ByteBuffer的兼容，其实现有“非池化的堆内存Buffer”，“非池化的直接内存Buffer”，“池化的堆内存Buffer”，“池化的直接内存Buffer”，另外ByteBuf的实现提供了对内存泄漏不同级别的监控。</p>
+<p>ByteBuf的内存池实现，ByteBuf对内存泄漏的监控，是我比较感兴趣的两个地方。</p>
+<p>1.ByteBuf的内存池实现</p>
+<pre><code>这里是最繁杂、最难的部分，这里后面补上。</code></pre><p>2.ByteBuf对内存泄露的监控<br>  Netty的内存监控是针对内存池和直接内存而言的，对于HeapByteBuf自有虚拟机完成GC。</p>
+<p>对于内存池而言，内存泄漏产生在Buffer已经使用完，但是这块内存还没有归还给内存池，对于直接内存的内存泄漏，是Buffer使用完，直接内存没有被回收（虚拟机不会自动回收直接内存）。</p>
+<p>ByteBuf有release和retain两个接口，由AbstractReferenceCountedByteBuf实现，分别表示对Buffer引用数目的减少和增加，当release后引用数目为0时，会对Buffer进行回收。对于内存池内的Buffer以及直接内存Buffer需要我们显式调用release进行回收。忘记调用release方法就会发生内存泄漏，特别是对于内存池而言，内存池会不断变大占用大量内存。</p>
+<p>对于内存泄漏的监控，Netty有四个级别：Disabled，Simple，Advanced，Paranoid；分别对应不同的监控频率和性能损耗。那么Netty是如何实现内存监控的呢？</p>
+<p>可以查看AbstractByteBufAllocator类的toLeakAwareBuffer方法，这里实际上利用了装饰器模式，以SimpleLeakAwareByteBuf为例，它持有实际起作用的ByteBuf实例，以及一个ResourceLeakTracker，ResourceLeakTracker的实现类DefaultResourceLeak继承了PhantomReference，ResourceLeakDetector将一个ReferenceQueue传入ResourceLeakTracker，这样在SimpleLeakAwareByteBuf引用被回收后，ReferenceQueue就被插入对应的refernce，我们就可以知道某个ByteBuf不再被使用了。</p>
+<p>但是我们如何得知这个ByteBuf是否被释放了呢？</p>
+<p>这是由一个ConcurrentHashMap来决定的，它存储的key就是DefaultResourceLeak（value应该是内存泄露的相关信息），当调用release并确定可以回收时，会把map中对应的key清除掉，这样ResourceLeakDetector会定期检查ReferenceQueue，当其中存在reference时，会查看map中是否也存在，如果也存在，那么就可以确认发生内存泄露了。<br>（ReferenceQueue和ConcurrentHashMap都在ResourceLeakDetector中）</p>
+<p>关于内存泄露监控机制的不同级别，以Simple为例，我们查看AbstractByteBufAllocator的toLeakAwareBuffer方法，一路查到ResourceLeakDetector的track0方法，该方法内可以看到实际上是使用线程安全的随机数对设定的参数（默认应该是100）取余为0时，返回DefaultResourceLeak，并检查是否发生内存泄漏，否则返回null，当级别为Disable时，直接返回null，并不做检查，这样就没有性能损耗了。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://carrotwang.github.io/categories/index-1.html" data-id="ck2mqftl10007p9vz0i4vdgii" class="article-share-link">Share</a>
+      <a data-url="https://carrotwang.github.io/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/" data-id="ck2mqftl30008p9vz1urpd4rn" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li></ul>
+
     </footer>
   </div>
   
     
+<nav id="article-nav">
+  
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Netty源码阅读（关于ChannelPipeline和ChannelHandler）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Netty源码阅读（整体介绍）</div>
+    </a>
+  
+</nav>
+
   
 </article>
 

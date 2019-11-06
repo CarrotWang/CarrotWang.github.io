@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Java日志框架(Slf4j vs Commons Logging) | Carrot Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近，新开发的一个项目遇到了一个log4j的配置问题，之前一直没怎么关注过日志框架，借助这个机会，好好了解下Java的日志框架，便于以后更好的使用。 本文重点介绍了：Java日志框架生态、Java日志框架的结构组成、Slf4j替代Commons Logging。 Java常用的日志框架如下：  Commons Logging：Apache基金会所属的项目，是一套Java日志接口； Slf4j：是一">
+<meta name="keywords" content="Java,Web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java日志框架(Slf4j vs Commons Logging)">
+<meta property="og:url" content="https:&#x2F;&#x2F;carrotwang.github.io&#x2F;2019&#x2F;11&#x2F;06&#x2F;Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging&#x2F;index.html">
+<meta property="og:site_name" content="Carrot Blog">
+<meta property="og:description" content="最近，新开发的一个项目遇到了一个log4j的配置问题，之前一直没怎么关注过日志框架，借助这个机会，好好了解下Java的日志框架，便于以后更好的使用。 本文重点介绍了：Java日志框架生态、Java日志框架的结构组成、Slf4j替代Commons Logging。 Java常用的日志框架如下：  Commons Logging：Apache基金会所属的项目，是一套Java日志接口； Slf4j：是一">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;11480144-cfde09ca173abd67.png?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;1240">
+<meta property="og:updated_time" content="2019-11-06T03:22:54.037Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;upload-images.jianshu.io&#x2F;upload_images&#x2F;11480144-cfde09ca173abd67.png?imageMogr2&#x2F;auto-orient&#x2F;strip%7CimageView2&#x2F;2&#x2F;w&#x2F;1240">
+  
+    <link rel="alternate" href="/atom.xml" title="Carrot Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Carrot Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">后端、大数据、Java、Go</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://carrotwang.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Java日志框架-Slf4j-vs-Commons-Logging" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/" class="article-date">
+  <time datetime="2019-11-06T03:20:18.000Z" itemprop="datePublished">2019-11-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java-Web/">Java Web</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Java日志框架(Slf4j vs Commons Logging)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近，新开发的一个项目遇到了一个log4j的配置问题，之前一直没怎么关注过日志框架，借助这个机会，好好了解下Java的日志框架，便于以后更好的使用。</p>
+<p>本文重点介绍了：Java日志框架生态、Java日志框架的结构组成、Slf4j替代Commons Logging。</p>
+<p>Java常用的日志框架如下：</p>
+<ol>
+<li>Commons Logging：Apache基金会所属的项目，是一套Java日志接口；</li>
+<li>Slf4j：是一套简易Java日志门面，本身并无日志的实现。（Simple Logging Facade for Java，缩写Slf4j）；</li>
+<li>log4j：Apache Log4j是一个基于Java的日志记录工具；</li>
+<li>log4j 2：Apache Log4j 2是apache开发的一款Log4j的升级产品，不兼容log4j 1；</li>
+<li>Logback：一套日志组件的实现(slf4j阵营)；</li>
+<li>Jul：Java Util Logging，自Java1.4以来的官方日志实现。</li>
+</ol>
+<p>现今，Java日志领域被划分为两大阵营：Commons Logging阵营和SLF4J阵营。</p>
+<h2 id="各日志框架之间的关系："><a href="#各日志框架之间的关系：" class="headerlink" title="各日志框架之间的关系："></a>各日志框架之间的关系：</h2><ol>
+<li>Commons Logging和Slf4j是两个日志门面框架，系统不和日志实现耦合，日志门面作为接待员，方便日志实现的替换（如：log4j2替换log4j1）；</li>
+<li>Commons Logging和log4j1、2配合使用，Slf4j和Logback组合使用；</li>
+<li>新项目建议使用Slf4j与Logback组合；</li>
+</ol>
+<p>##桥接原理分析<br>桥接器原本语境是使用在网络中数据包的转发，在日志框架里，主要是日志门面寻找日志实现类的类。<br><img src="https://upload-images.jianshu.io/upload_images/11480144-cfde09ca173abd67.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="log.png"></p>
+<p>Slf4j在获取日志框架实现时扫描class path，寻找org.slf4j.impl.StaticLoggerBinder（有多个，会打印警告日志，并选择遇到的第一个），桥接器就是提供桥接来实现类和接口类之间的适配。</p>
+<p>对于Commons Logging，其寻找Logger实现的步骤如下：</p>
+<ol>
+<li>首先，寻找org.apache.commons.logging.LogFactory 属性配置</li>
+<li>否则，利用JDK1.3 开始提供的service 发现机制，会扫描classpah 下的META-INF/services/org.apache.commons.logging.LogFactory 文件，若找到则装载里面的配置，使用里面的配置。</li>
+<li>否则，从Classpath 里寻找commons-logging.properties ，找到则根据里面的配置加载。</li>
+<li>否则，使用默认的配置：如果能找到Log4j 则默认使用log4j 实现，如果没有则使用JDK14Logger 实现，再没有则使用commons-logging 内部提供的SimpleLog 实现。</li>
+</ol>
+<p><strong>Slf4j和Commons Logging获取Logger的区别</strong>：<br>Slf4j扫描classpath获取StaticLoggerBinder，通过StaticLoggerBinder的静态绑定逻辑获取Logger。<br>Commons Logging是采用ClassLoader动态的获取Logger，在一些情况下会产生ClassLoader的问题（如OSGI，主要原因在文末Ceki Gülcü的一片参考文献有提及）</p>
+<h2 id="Slf4j-amp-Logback的优势"><a href="#Slf4j-amp-Logback的优势" class="headerlink" title="Slf4j&amp;Logback的优势"></a>Slf4j&amp;Logback的优势</h2><ol>
+<li>Slf4j的静态绑定实现机制决定了其更加通用；</li>
+<li>Logback拥有更好的性能；<br>Logback声称：某些关键操作，比如判定是否记录一条日志语句的操作，其性能得到了显著的提高。这个操作在Logback中需要3纳秒，而在Log4J中则需要30纳秒。LogBack创建记录器（logger）的速度也更快：13毫秒，而在Log4J中需要23毫秒。更重要的是，它获取已存在的记录器只需94纳秒，而Log4J需要2234纳秒，时间减少到了1/23。跟JUL相比的性能提高也是显著的。</li>
+<li>自动重新加载配置文件，当配置文件修改了，Logback-classic能自动重新加载配置文件<br>…</li>
+</ol>
+<p>##LogBack结构<br>Java日志框架由3部分组成，分别是Logger，Formatter，Appender。<br>Logger：用来接收用户输入的内容；<br>Formatter：用来格式化日志内容；<br>Appender：将日志内容输出到Console，socket，文件，数据库，邮件等。<br>在Logback中，则分别对应于Logger、Layout、Appender。</p>
+<ol>
+<li><p>Logger<br>   Logger有三点需要重点关注：名字属性、Level属性，如何获取。<br>   （1）每个Logger都有一个名字，并且有父子、子孙层次关系；</p>
+<pre><code>存在一个特殊的Logger实例，它的名字为“org.slf4j.Logger.ROOT_LOGGER_NAME”，即“ROOT”</code></pre><p>   （2）Logger实例应该设置Level属性，如果某个Logger实例的Level属性未设置，那么沿着Logger实例的层次关系向上回溯直到最顶层的”ROOT”Logger实例为止。<br>   （3）在Logback运行的时候，LoggerContext类实例会维护一个类型为Map&lt;String, Logger&gt;的map对象loggerCache，它的key为Logger实例的名字，它的value为对应的Logger实例。<br>当我们执行”LoggerFactory.getLogger(‘xxx’)”语句，来检索名字为”xxx”的Logger实例时，LoggerContext类实例会先去查看loggerCache对象，看是否已经存在名字为”xxx”的Logger实例，如果存在，直接返回；否则，先创建好Logger实例（注意这里创建Logger实例的时候，会把loggerCache中不存在的祖先和父亲Logger实例都创建好）并放入loggerCache中，最后返回刚创建好的Logger实例。<br>即在Logback运行的时候，相同名字的Logger实例只保存一份。</p>
+</li>
+<li><p>Layout<br>   绑定在Appender上，用来格式化Appender的输出</p>
+</li>
+<li><p>Appender<br>  Appender代表日志输出目的地，可以是Console, File, Sockets, DataBase等等。<br>一个Logger实例上可以绑定0到多个Appender实例，当在该Logger实例上产生的日志记录请求是有效的情况下，日志记录请求会被发送到所有绑定在该Logger实例上的Appender实例。<br>一个Logger实例上绑定的Appender实例不仅来自自身的绑定，也来自祖先和父亲Logger实例的Appender绑定，即可以继承祖先和父亲Logger实例绑定的Appender实例。</p>
+</li>
+</ol>
+<h2 id="Slf4j替代Commons-Logging"><a href="#Slf4j替代Commons-Logging" class="headerlink" title="Slf4j替代Commons Logging"></a>Slf4j替代Commons Logging</h2><p>Java生态有许多日志工具，不同的组件可能会使用不同的日志框架，为了不对日志框架产生依赖，Apache引入了Commons Logging门面框架，不过当程序规模越来越庞大时，JCL的动态绑定并不是总能成功。Slf4j的静态绑定功能解决了这一问题，然而，依赖的组件中可能会有使用了Commons Logging的组件，Slf4j提供了jcl-over-slf4j.jar ，可以借助jcl-over-slf4j.jar 讲Commons Logging输出的日志引入到Slf4j中。<br>Component(服务)<br>      | |<br> log to Apache Commons Logging(JCL)<br>      V<br>jcl-over-slf4j.jar — (redirect) —&gt; SLF4j —&gt; slf4j-log4j12-version.jar —&gt; log4j.jar —&gt; 输出日志<br>（另外也可以删除所有Commons Logging的依赖，不过这太繁琐了，也容易出问题）。</p>
+<p>参考文献：<br><a href="https://www.cnblogs.com/chenhongliang/p/5312517.html（各日志框架介绍）" target="_blank" rel="noopener">https://www.cnblogs.com/chenhongliang/p/5312517.html（各日志框架介绍）</a><br><a href="https://www.cnblogs.com/crazyrunning/p/6145890.html（日志门面的作用）" target="_blank" rel="noopener">https://www.cnblogs.com/crazyrunning/p/6145890.html（日志门面的作用）</a><br><a href="http://www.runoob.com/design-pattern/facade-pattern.html（门面模式）" target="_blank" rel="noopener">http://www.runoob.com/design-pattern/facade-pattern.html（门面模式）</a><br><a href="https://blog.csdn.net/jpf254/article/details/80757041（Slf4j桥接原理）" target="_blank" rel="noopener">https://blog.csdn.net/jpf254/article/details/80757041（Slf4j桥接原理）</a><br><a href="http://singleant.iteye.com/blog/934593（commons-logging" target="_blank" rel="noopener">http://singleant.iteye.com/blog/934593（commons-logging</a>  Logger实现加载步骤）<br><a href="https://blog.csdn.net/dslztx/article/details/47450741（Logback详解）" target="_blank" rel="noopener">https://blog.csdn.net/dslztx/article/details/47450741（Logback详解）</a><br><a href="https://articles.qos.ch/classloader.html（Ceki" target="_blank" rel="noopener">https://articles.qos.ch/classloader.html（Ceki</a> Gülcü控诉了Commons Logging的弊端😂）<br><a href="https://blog.csdn.net/zbajie001/article/details/79596109（Logback的优点）" target="_blank" rel="noopener">https://blog.csdn.net/zbajie001/article/details/79596109（Logback的优点）</a><br><a href="https://blog.csdn.net/javaloveiphone/article/details/52486257（Slf4j替代Commons" target="_blank" rel="noopener">https://blog.csdn.net/javaloveiphone/article/details/52486257（Slf4j替代Commons</a> Logging）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://carrotwang.github.io/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/" data-id="ck2mqftks0002p9vz4bt28njp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Web/" rel="tag">Web</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Netty源码阅读（整体介绍）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/11/06/Maven-Profile%E9%9B%86%E6%88%90Spring-Profile/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Maven Profile集成Spring Profile</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Web/">Java Web</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/flink/">flink</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Maven/" rel="tag">Maven</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Netty/" rel="tag">Netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Web/" rel="tag">Web</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flink/" rel="tag">flink</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" rel="tag">实时计算</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Maven/" style="font-size: 10px;">Maven</a> <a href="/tags/Netty/" style="font-size: 17.5px;">Netty</a> <a href="/tags/Spring/" style="font-size: 12.5px;">Spring</a> <a href="/tags/Web/" style="font-size: 15px;">Web</a> <a href="/tags/flink/" style="font-size: 10px;">flink</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97/" style="font-size: 10px;">实时计算</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/06/Spring-IOC%E6%BA%90%E7%A0%81%E5%88%9D%E6%8E%A2%EF%BC%88%E4%B8%80%EF%BC%89/">Spring IOC源码初探（一）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EChannelPipeline%E5%92%8CChannelHandler%EF%BC%89/">Netty源码阅读（关于ChannelPipeline和ChannelHandler）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E5%85%B3%E4%BA%8EByteBuf%EF%BC%89/">Netty源码阅读（关于ByteBuf）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Netty%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%EF%BC%88%E6%95%B4%E4%BD%93%E4%BB%8B%E7%BB%8D%EF%BC%89/">Netty源码阅读（整体介绍）</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/Java%E6%97%A5%E5%BF%97%E6%A1%86%E6%9E%B6-Slf4j-vs-Commons-Logging/">Java日志框架(Slf4j vs Commons Logging)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Wandering Carrot<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
